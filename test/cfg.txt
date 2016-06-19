@@ -1,0 +1,38 @@
+#include "nm-types.h"
+
+#define ep8f  channel_addr 0x8f
+#define ep0f  channel_addr 0xf
+#define ca6   channel_addr 6
+#define ca8   channel_addr 8
+#define ca10  channel_addr 10
+
+root {
+  network_manager {
+    local_connection {
+      api3
+      usb
+      timing_master 1
+      async_bandwidth 372
+      endpoint { ctrl in ep8f } + { ctrl out ep0f }
+    }
+
+    device
+      { dev(0x311) api3 } +
+      { dev(0x333) api3 } +
+      { dev(0x331) api2 } +
+      { dev(0x320) api1
+        channel { id(100) socket { mlb async in  bw(60) ca6 } } +
+                { id(101) socket { mlb async out bw(60) ca8 } }
+      } +
+      { dev(0x320) api1
+        channel { id(1)   socket { most isoc  in  bw(72) } +
+                                 { mlb  isoc  out bw(72) ca10 } } +
+                { id(100) socket { mlb  async out bw(60) ca6 } } +
+                { id(101) socket { mlb  async in  bw(60) ca8 } }
+      }
+
+    route {
+      terminal { dev(0x315) inst(0) id(1) } + { dev(0x320) inst(0) id(1) }
+    }
+  }
+}
