@@ -1,11 +1,12 @@
 #!/bin/bash
 
-cat config-usb-8-isoc-asymmetric.xml | sed -r \
-	-e "s,<([^>/]+)>([^<>]+)</([^>]+)>,\1 \2,g" \
-	-e "s,</\S+>,},g" \
-	-e "s,<(\S+)>,\1 {,g" \
+cat "$@" | sed -r \
+	-e "s,<\?[^<>/]+\?>,#include \"nm-types.h\"\n,g" \
 	-e "s,<\!--,/*,g" \
 	-e "s,-->,*/,g" \
+	-e "s,<([^<>/]+)>([^<>]+)</[^<>/]+>,\1 \2,g" \
+	-e "s,<([^<>/]+)>,\1 {,g" \
+	-e "s,</[^<>/]+>,},g" \
 	-e "s,\<device_api_ver 1\>,api1,g" \
 	-e "s,\<device_api_ver 2\>,api2,g" \
 	-e "s,\<device_api_ver 3\>,api3,g" \
@@ -24,4 +25,3 @@ cat config-usb-8-isoc-asymmetric.xml | sed -r \
 	-e "s,\<instance (\S+)\>,inst(\1),g" \
 	-e "s,\<channel_addr_hex (\S+)\>,ca(0x\1),g" \
 	-e "s,\<device_type_hex (\S+)\>,dev(0x\1),g" \
-
