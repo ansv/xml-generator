@@ -33,37 +33,23 @@ void assure_no_eof(void)
 	}
 }
 
-bool get_next_token_if(bool expr)
+bool get_next_char_if(bool expr)
 {
 	if (!expr)
 		return false;
 
 	cur = getchar();
-	while (is_space(cur))
-		cur = getchar();
-
 	return true;
 }
 
-void tr_string(void)
+bool get_next_token_if(bool expr)
 {
-	if (cur == '"') {
-		for (;;) {
-			cur = getchar();
-			if (get_next_token_if(cur == '"'))
-				return;
+	if (!get_next_char_if(expr))
+		return false;
 
-			assure_no_eof();
-			printf("%c", cur);
-		}
-	}
-
-	assure_no_special();
-	assure_no_eof();
-	do {
-		printf("%c", cur);
-		cur = getchar();
-	} while (!get_next_token_if(is_space(cur)) && !is_special(cur) && cur != EOF);
+	while (get_next_char_if(is_space(cur)))
+		continue;
+	return true;
 }
 
 void read_key(char *k)
@@ -103,15 +89,37 @@ void tr_paar(void)
 	--sti;
 }
 
+void tr_quoted_string(void)
+{
+	while (!get_next_token_if(cur == '"')) {
+		assure_no_eof();
+		printf("%c", cur);
+		cur = getchar();
+	}
+}
+
+void tr_simple_string(void)
+{
+	assure_no_special();
+	assure_no_eof();
+	do {
+		printf("%c", cur);
+		cur = getchar();
+	} while (!get_next_token_if(is_space(cur)) && !is_special(cur) && cur != EOF);
+}
+
 void tr_value(const char *k)
 {
 	assure_no_eof();
 	printf("<%s>", k);
-	if (!get_next_token_if(cur == '{'))
-		tr_string();
-	else
+	if (get_next_token_if(cur == '{')) {
 		while (!get_next_token_if(cur == '}'))
 			tr_paar();
+	} else if (get_next_char_if(cur == '"')) {
+		tr_quoted_string();
+	} else {
+		tr_simple_string();
+	}
 	printf("</%s>\n", k);
 }
 
